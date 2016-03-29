@@ -48,7 +48,7 @@ void Server::checkForNewConnections()
 void Server::initializePlayers()
 {
     //Initialize players:
-    cout << "Sending player data to all clients... \n";
+    cout << "Sending data to all clients... \n";
 
 
     short playerId = 0;
@@ -96,7 +96,7 @@ void Server::processNetworkEvents()
                 packet >> tempId;
 
                 personMap.erase(tempId);
-		//delete clients.at(tempId);
+		delete clients.at(tempId);
 //		selector.remove(*clients.at(tempId));
 		it = clients.erase(clients.begin() + tempId);
 
