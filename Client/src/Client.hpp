@@ -4,6 +4,7 @@
 #include "TextureHandler.h"
 #include "ChatBox.h"
 #include "MainPane.h"
+#include "Parser.h"
 
 class Client
 {

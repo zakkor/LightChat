@@ -1,38 +1,27 @@
-#include <iostream>
-//#include <winsock2.h>
 #include "Client.hpp"
-#include "SFML/Network.hpp"
-#include "SFML/Audio.hpp"
-#include "NetEventTypes.h"
-#include <cstring>
+#include <iostream>
+#include "../../shared/src/NetEventTypes.hpp"
 
 using std::cin;
 using std::cout;
 
 Client::Client()
+    : screenSize(400, 400)
+    , window(sf::VideoMode(screenSize.x, screenSize.y), "Client", sf::Style::Close)
+    , personCount(0)
+    , inFocus(false)
+    , currentlyTyping(false)
 {
-    screenSize.x = 400;
-    screenSize.y = 400;
-
-    window.create(sf::VideoMode(screenSize.x, screenSize.y), "Client", sf::Style::Close);
-
     font.loadFromFile("res/arial.ttf");
-
+    
     window.setKeyRepeatEnabled(true);
-
-    personCount = 0;
-
-    inFocus = false;
-
-    currentlyTyping = false;
-
+    window.setVerticalSyncEnabled(false);
+    
     chatBox.text.setFont(font);
 }
 
 void Client::run()
 {
-    window.setVerticalSyncEnabled(false);
-
     sf::IpAddress ipAddress;
     //    cout << "Enter server ip to connect to:\n";
     //    cin >> ipAddress;
@@ -105,9 +94,48 @@ void Client::processEvents()
 
 
                 sf::Packet packet;
-                packet << NET::PersonTalked << personId << chatBox.text.getString().toAnsiString().c_str();
-                client.send(packet);
-                chatBox.text.setString("");
+		std::string message = chatBox.text.getString().toAnsiString();
+
+		// check if it's a command
+		if (message.at(0) == '/')
+		{
+		    bool hasArg = false;
+		    string commandName = ""; std::string arg = "";
+                    if (message.find_first_of(' ') != string::npos)
+                    {
+                        commandName = Parser::copyFromCharToChar('/', ' ', message);
+			arg = Parser::copyFromCharToEnd(' ', message);
+			hasArg = true;
+                    }
+                    else
+                    {
+                        commandName = Parser::copyFromCharToEnd('/', message);
+                    }
+
+		    // check if command is valid
+		    if (commandName != "")
+		    {
+			std::cout << commandName << std::endl;
+			packet << NET::ServerCommand << personId
+			       << commandName.c_str() << hasArg;
+			if (hasArg)
+			{
+			    packet << arg.c_str();
+			}
+			
+			client.send(packet);
+		    }
+
+		}
+		// it's a regular message
+		else
+		{
+		    packet << NET::PersonTalked << personId << message.c_str();
+		    client.send(packet);
+		}
+
+		// reset chat box
+		chatBox.text.setString("");
             }
 
         }
