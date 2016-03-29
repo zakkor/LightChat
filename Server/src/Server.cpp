@@ -2,7 +2,8 @@
 #include "Server.hpp"
 #include "SFML/Network.hpp"
 #include "SFML/Audio.hpp"
-#include "NetEventTypes.h"
+#include "../../shared/src/NetEventTypes.hpp"
+#include <string.h>
 
 #define RELEASE
 
@@ -12,8 +13,34 @@ using std::map;
 
 Server::Server()
     : personCount(0)
-{
+{ }
 
+void Server::initializePlayers()
+{
+    //Initialize players:
+    cout << "Sending data to all clients... \n";
+
+    short personId = 0;
+    for (auto &client : clients)
+    {
+	std::cout << "Data sent for client #" << personId << std::endl;
+        sf::Packet packet;
+        packet << NET::PersonConnected;
+        packet << personCount;
+        packet << personId;
+	
+	//add all the names
+	for (auto p : personMap)
+	{
+	    std::cout << p.second.name.c_str() << std::endl;
+	    packet << p.second.name.c_str();
+	}
+	
+        client->send(packet);
+        personId++;
+    }
+
+    cout << "done!\n";
 }
 
 void Server::checkForNewConnections()
@@ -33,9 +60,9 @@ void Server::checkForNewConnections()
                 clients.push_back(std::move(newClient));
 		// !!! newClient is unusable from here!
 
-//                Add new person to the personMap
+		//Add one new person to the personMap
                 Person newPerson;
-                newPerson.name = "unnamed";
+                newPerson.name = "YA FUC";
 
                 personMap.emplace(personCount, newPerson);
                 personCount++;
@@ -46,30 +73,14 @@ void Server::checkForNewConnections()
     }
 }
 
-void Server::initializePlayers()
+void Server::sendPacketToAllClients(sf::Packet packet)
 {
-    //Initialize players:
-    cout << "Sending data to all clients... \n";
-
-
-    short playerId = 0;
-    for (auto &client : clients)
+    for (auto &return_client : clients)
     {
-	std::cout << "Client #" << playerId << std::endl;
-        sf::Packet packet;
-        packet << NET::PersonConnected;
-        packet << personCount;
-        packet << playerId;
-        client->send(packet);
-        playerId++;
+	return_client->send(packet);
     }
-
-    cout << "done!\n";
 }
 
-void Server::processEvents()
-{
-}
 
 void Server::processNetworkEvents()
 {    
@@ -97,10 +108,8 @@ void Server::processNetworkEvents()
                 packet >> tempId;
 
                 personMap.erase(tempId);
-//		delete (&clients.at(tempId));
 		selector.remove(*clients.at(tempId));
 		it = clients.erase(clients.begin() + tempId);
-		
 
                 personCount--;
 
@@ -114,53 +123,58 @@ void Server::processNetworkEvents()
 
             if (aux == NET::PersonTalked)
             {
-                //Unravel the packet and set the new coordinates to the playerId
+                //Unravel the packet and set the new coordinates to the personId
                 short tempId;
                 char message[100];
                 tempId = -1;
-
-
+		
                 packet >> tempId;
                 packet >> message;
-
-
-                //Just in case
-
-                string messageString = message;
-                cout << messageString << '\n';
-
-                if (messageString[0] == '/')
-                {
-                    //this means its a command
-                    string commandName = "";
-
-                    if (messageString.find_first_of(' ') != string::npos)
-                    {
-                        commandName = parser.copyFromCharToChar('/', ' ', messageString);
-                    }
-                    else
-                    {
-                        commandName = parser.copyFromCharToEnd('/', messageString);
-                    }
-
-                    // check commands
-                    if (commandName == "rename")
-                    {
-                       string newName = parser.copyFromCharToEnd(' ', messageString);
-		       return_packet.clear();
-		       return_packet << NET::PersonRenamed << tempId << newName.c_str();
-                    }
-                }
 
                 if (tempId != -1)
                 {
                     //Now we tell all the clients that one of them moved
-                    for (auto &return_client : clients)
-                    {
-                        return_client->send(return_packet);
-                    }
+		    sendPacketToAllClients(return_packet);
                 }
             }
+	    
+	    if (aux == NET::ServerCommand)
+	    {
+                short tempId;
+                char command[100];
+		char arg[100];
+		bool hasArg;
+		
+		
+                tempId = -1;
+		
+                packet >> tempId;
+                packet >> command;
+		packet >> hasArg;
+
+		if (hasArg)
+		{
+		    packet >> arg;
+		    // check commands
+		    if (strncmp(command,"rename", 100) == 0)
+		    {
+
+			personMap.at(tempId).name = arg;
+			return_packet.clear();
+			return_packet << NET::PersonRenamed << tempId
+				      << personMap.at(tempId).name.c_str();
+		    }
+		}
+
+		std::cout << command << std::endl;
+
+
+
+		if (tempId != -1)
+		{
+		    sendPacketToAllClients(return_packet);
+		}
+	    }
         }
 	if (!needToSkipIncrement)
 	{
@@ -181,9 +195,6 @@ void Server::run()
     for (;;)
     {
         checkForNewConnections();
-
-        processEvents();
-
         processNetworkEvents();
     }
 }

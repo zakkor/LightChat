@@ -1,12 +1,6 @@
-#include <SFML/Network/TcpSocket.hpp>
-#include <SFML/Audio/Music.hpp>
-#include <map>
-#include <deque>
-#include <SFML/Network/SocketSelector.hpp>
-#include <SFML/Network/TcpListener.hpp>
-#include "SFML/Graphics.hpp"
+#include "SFML/Network.hpp"
 #include "Person.h"
-#include "Parser.h"
+#include <deque>
 
 class Server
 {
@@ -15,12 +9,11 @@ public:
     void run();
 private:
     void checkForNewConnections();
-    void processEvents();
     void processNetworkEvents();
 
     void initializePlayers();
 
-
+    void sendPacketToAllClients(sf::Packet packet);
 
     sf::TcpListener listener;
     std::deque<std::unique_ptr<sf::TcpSocket>> clients;
@@ -28,5 +21,4 @@ private:
 
     short personCount;
     std::map<short, Person> personMap;
-    Parser parser;
 };
