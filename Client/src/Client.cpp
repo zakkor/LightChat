@@ -16,7 +16,7 @@ Client::Client()
 
     window.create(sf::VideoMode(screenSize.x, screenSize.y), "Client", sf::Style::Close);
 
-    font.loadFromFile("font.ttf");
+    font.loadFromFile("res/arial.ttf");
 
     window.setKeyRepeatEnabled(true);
 
@@ -34,17 +34,17 @@ void Client::run()
     window.setVerticalSyncEnabled(false);
 
     sf::IpAddress ipAddress;
-    cout << "Enter server ip to connect to:\n";
-    cin >> ipAddress;
+    //    cout << "Enter server ip to connect to:\n";
+    //    cin >> ipAddress;
 
-//    ipAddress = "localhost";
+    ipAddress = "localhost";
 
     client.setBlocking(false);
-    sf::Socket::Status status = client.connect(ipAddress, 53000);
+    sf::Socket::Status status = client.connect(ipAddress, 53005);
     while (status != sf::Socket::Done)
     {
         cout << "Attempting to connect...\n";
-        status = client.connect(ipAddress, 53000);
+        status = client.connect(ipAddress, 53005);
     }
 
     cout << "Connected succesfully!\n";
@@ -83,6 +83,7 @@ void Client::processEvents()
     {
         if (event.type == sf::Event::Closed)
         {
+	    // person disconnected
             sf::Packet packet;
             packet << NET::PersonDisconnected << personId;
             client.send(packet);
@@ -179,7 +180,7 @@ void Client::processNetworkEvents()
             newChatMessage.message.setString(message);
             newChatMessage.message.setFont(font);
 
-            newChatMessage.name.setString(personMap.at(tempId).name + ":");
+	    newChatMessage.name.setString(personMap.at(tempId).name + ":");
             newChatMessage.name.setFont(font);
 
             mainPane.addNewMessage(newChatMessage);

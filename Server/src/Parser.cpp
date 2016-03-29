@@ -4,8 +4,8 @@ string Parser::copyFromCharToChar(char char1, char char2, string str)
 {
     string newStr = "";
 
-    int start = str.find_first_of(char1) + 1;
-    int end = str.find_first_of(char2);
+    unsigned const int start = str.find_first_of(char1) + 1;
+    unsigned const int end = str.find_first_of(char2);
 
     for (unsigned int i = start; i < end; ++i)
     {

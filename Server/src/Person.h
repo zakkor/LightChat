@@ -7,6 +7,5 @@ class Person
 {
 public:
     Person();
-
     std::string name;
 };

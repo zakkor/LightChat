@@ -6,7 +6,6 @@
 #include <SFML/Network/TcpListener.hpp>
 #include "SFML/Graphics.hpp"
 #include "Person.h"
-//#include "TextureHandler.h"
 #include "Parser.h"
 
 class Server
@@ -21,15 +20,6 @@ private:
 
     void initializePlayers();
 
-    //string helpers
-
-
-
-    //
-
-
-    //    sf::RenderWindow window;
-//    TextureHandler textureHandler;
 
 
     sf::TcpListener listener;

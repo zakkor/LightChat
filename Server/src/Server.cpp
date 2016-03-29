@@ -11,21 +11,18 @@ using std::cout;
 using std::map;
 
 Server::Server()
+    : personCount(0)
 {
-//    window.create(sf::VideoMode(400, 400), "Server", sf::Style::Close);
-//    window.setKeyRepeatEnabled(true);
-    personCount = 0;
+
 }
 
 void Server::checkForNewConnections()
 {
-//    window.setVerticalSyncEnabled(false);
     if (selector.wait())
     {
         if (selector.isReady(listener))
         {
             //We have a new connection!
-
             sf::TcpSocket *newClient = new sf::TcpSocket;
             newClient->setBlocking(false);
 
@@ -33,12 +30,11 @@ void Server::checkForNewConnections()
             {
                 cout << "Added new client!\n";
                 clients.push_back(newClient);
-
                 selector.add(*newClient);
 
-//                Add new player to the personMap
+//                Add new person to the personMap
                 Person newPerson;
-                newPerson.name = "ed";
+                newPerson.name = "unnamed";
 
                 personMap.emplace(personCount, newPerson);
                 personCount++;
@@ -52,12 +48,13 @@ void Server::checkForNewConnections()
 void Server::initializePlayers()
 {
     //Initialize players:
-    cout << "Sending player data to all clients... ";
+    cout << "Sending player data to all clients... \n";
 
 
     short playerId = 0;
     for (auto &client : clients)
     {
+	std::cout << "Client #" << playerId << std::endl;
         sf::Packet packet;
         packet << NET::PersonConnected;
         packet << personCount;
@@ -71,21 +68,15 @@ void Server::initializePlayers()
 
 void Server::processEvents()
 {
-//    sf::Event event;
-//    while (window.pollEvent(event))
-//    {
-//        if (event.type == sf::Event::Closed)
-//            window.close();
-//    }
 }
 
 void Server::processNetworkEvents()
-{
-    for (std::deque<sf::TcpSocket *>::iterator it = clients.begin(); it != clients.end(); ++it)
+{    
+    for (auto it = clients.begin(); it != clients.end(); /* !!! */)
     {
+	bool needToSkipIncrement = false;
         sf::TcpSocket &client = **it;
-
-
+	
         // The client has sent some data, we can receive it
         sf::Packet packet;
         if (client.receive(packet) == sf::Socket::Done)
@@ -105,13 +96,19 @@ void Server::processNetworkEvents()
                 packet >> tempId;
 
                 personMap.erase(tempId);
+		//delete clients.at(tempId);
+//		selector.remove(*clients.at(tempId));
+		it = clients.erase(clients.begin() + tempId);
 
                 personCount--;
 
                 initializePlayers();
-
+		
+		needToSkipIncrement = true;
+		
                 cout << "User with ID " << tempId << " has left your channel.\n";
             }
+
 
             if (aux == NET::PersonTalked)
             {
@@ -148,8 +145,8 @@ void Server::processNetworkEvents()
                     if (commandName == "rename")
                     {
                        string newName = parser.copyFromCharToEnd(' ', messageString);
-                        return_packet.clear();
-                        return_packet << NET::PersonRenamed << tempId << newName.c_str();
+		       return_packet.clear();
+		       return_packet << NET::PersonRenamed << tempId << newName.c_str();
                     }
                 }
 
@@ -163,6 +160,10 @@ void Server::processNetworkEvents()
                 }
             }
         }
+	if (!needToSkipIncrement)
+	{
+	    ++it;
+	}
     }
 }
 
@@ -171,11 +172,11 @@ void Server::run()
     cout << "Server is listening to port 53000...\n";
 
     // bind the listener to a port
-    listener.listen(53000);
+    listener.listen(53005);
     selector.add(listener);
 
 
-    for (; ;)
+    for (;;)
     {
         checkForNewConnections();
 
