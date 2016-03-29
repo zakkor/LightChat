@@ -23,7 +23,7 @@ private:
 
 
     sf::TcpListener listener;
-    std::deque<sf::TcpSocket*> clients;
+    std::deque<std::unique_ptr<sf::TcpSocket>> clients;
     sf::SocketSelector selector;
 
     short personCount;

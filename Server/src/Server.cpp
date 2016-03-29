@@ -23,14 +23,15 @@ void Server::checkForNewConnections()
         if (selector.isReady(listener))
         {
             //We have a new connection!
-            sf::TcpSocket *newClient = new sf::TcpSocket;
+	    std::unique_ptr<sf::TcpSocket> newClient (new sf::TcpSocket);
+	    
             newClient->setBlocking(false);
-
             if (listener.accept(*newClient) == sf::Socket::Done)
             {
                 cout << "Added new client!\n";
-                clients.push_back(newClient);
-                selector.add(*newClient);
+		selector.add(*newClient);
+                clients.push_back(std::move(newClient));
+		// !!! newClient is unusable from here!
 
 //                Add new person to the personMap
                 Person newPerson;
@@ -96,9 +97,10 @@ void Server::processNetworkEvents()
                 packet >> tempId;
 
                 personMap.erase(tempId);
-		delete clients.at(tempId);
-//		selector.remove(*clients.at(tempId));
+//		delete (&clients.at(tempId));
+		selector.remove(*clients.at(tempId));
 		it = clients.erase(clients.begin() + tempId);
+		
 
                 personCount--;
 
