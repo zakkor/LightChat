@@ -1,1 +1,1 @@
-# LightChat
+## LightChat
