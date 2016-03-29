@@ -1,5 +1,4 @@
-#include <SFML/Network/TcpSocket.hpp>
-#include <SFML/Audio/Music.hpp>
+#include "SFML/Network.hpp"
 #include "SFML/Graphics.hpp"
 #include "Person.h"
 #include "TextureHandler.h"

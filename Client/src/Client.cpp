@@ -157,13 +157,16 @@ void Client::processNetworkEvents()
             cout << "People connected that I know of are:\n";
             for (int i = 0; i < personCount; ++i)
             {
-                Person newPlayer;
+                Person newPerson;
+		char newName[] = "YA FUCKED UP!!!!";
+		packet >> newName;
+		std::cout << "PERSON NAME: " << newName << std::endl;
+		
+		newPerson.name = newName;
 
-                newPlayer.name = "unnamed";
+                cout << newPerson.name << " ";
 
-                cout << newPlayer.name << " ";
-
-                personMap.emplace(i, newPlayer);
+                personMap.emplace(i, newPerson);
             }
             cout << std::endl;
         }
