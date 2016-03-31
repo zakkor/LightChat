@@ -28,14 +28,14 @@ void Server::initializePlayers()
         packet << NET::PersonConnected;
         packet << personCount;
         packet << personId;
-	
+
 	//add all the names
 	for (auto p : personMap)
 	{
 	    std::cout << p.second.name.c_str() << std::endl;
 	    packet << p.second.name.c_str();
 	}
-	
+
         client->send(packet);
         personId++;
     }
@@ -51,7 +51,7 @@ void Server::checkForNewConnections()
         {
             //We have a new connection!
 	    std::unique_ptr<sf::TcpSocket> newClient (new sf::TcpSocket);
-	    
+
             newClient->setBlocking(false);
             if (listener.accept(*newClient) == sf::Socket::Done)
             {
@@ -62,7 +62,7 @@ void Server::checkForNewConnections()
 
 		//Add one new person to the personMap
                 Person newPerson;
-                newPerson.name = "YA FUC";
+                newPerson.name = "unnamed";
 
                 personMap.emplace(personCount, newPerson);
                 personCount++;
@@ -83,12 +83,12 @@ void Server::sendPacketToAllClients(sf::Packet packet)
 
 
 void Server::processNetworkEvents()
-{    
+{
     for (auto it = clients.begin(); it != clients.end(); /* !!! */)
     {
 	bool needToSkipIncrement = false;
         sf::TcpSocket &client = **it;
-	
+
         // The client has sent some data, we can receive it
         sf::Packet packet;
         if (client.receive(packet) == sf::Socket::Done)
@@ -114,9 +114,9 @@ void Server::processNetworkEvents()
                 personCount--;
 
                 initializePlayers();
-		
+
 		needToSkipIncrement = true;
-		
+
                 cout << "User with ID " << tempId << " has left your channel.\n";
             }
 
@@ -127,7 +127,7 @@ void Server::processNetworkEvents()
                 short tempId;
                 char message[100];
                 tempId = -1;
-		
+
                 packet >> tempId;
                 packet >> message;
 
@@ -137,17 +137,17 @@ void Server::processNetworkEvents()
 		    sendPacketToAllClients(return_packet);
                 }
             }
-	    
+
 	    if (aux == NET::ServerCommand)
 	    {
                 short tempId;
                 char command[100];
 		char arg[100];
 		bool hasArg;
-		
-		
+
+
                 tempId = -1;
-		
+
                 packet >> tempId;
                 packet >> command;
 		packet >> hasArg;

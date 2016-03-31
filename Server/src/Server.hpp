@@ -1,6 +1,7 @@
 #include "SFML/Network.hpp"
 #include "Person.h"
 #include <deque>
+#include <memory>
 
 class Server
 {

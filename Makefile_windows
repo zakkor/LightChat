@@ -1,0 +1,7 @@
+release:
+	#remove mv if you're on linux
+	cd Server && make release && mv lcs lcs.exe
+	cd Client && make release && mv lcc lcc.exe
+clean:
+	cd Server && make clean
+	cd Client && make clean

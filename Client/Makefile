@@ -1,6 +1,6 @@
 #### PROJECT SETTINGS ####
 # The name of the executable to be created
-BIN_NAME := LightChat-client
+BIN_NAME := lcc
 # Compiler used
 CXX ?= clang++
 # Extension of source files used in the project
