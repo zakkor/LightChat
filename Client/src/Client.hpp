@@ -5,6 +5,7 @@
 #include "ChatBox.h"
 #include "MainPane.h"
 #include "Parser.h"
+#include "MyRecorder.hpp"
 
 class Client
 {
@@ -27,6 +28,9 @@ private:
 
     TextureHandler textureHandler;
     sf::Font font;
+
+    sf::Music voice;
+    MyRecorder recorder;
 
     sf::TcpSocket client;
 

@@ -6,6 +6,7 @@ public:
     ChatMessage();
     sf::Text name;
     sf::Text message;
+    bool belongsToSelf;
 };
 
 class MainPane

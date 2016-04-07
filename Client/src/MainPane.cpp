@@ -8,9 +8,10 @@ MainPane::MainPane()
 
 
 ChatMessage::ChatMessage()
+    : belongsToSelf(false)
 {
     name.setCharacterSize(14);
-    name.setColor(sf::Color::Black);
+    name.setColor(sf::Color::Green);
     name.setPosition(0, 0);
     message.setCharacterSize(14);
     message.setColor(sf::Color::Black);
@@ -19,8 +20,16 @@ ChatMessage::ChatMessage()
 
 void MainPane::addNewMessage(ChatMessage chatMessage)
 {
-    chatMessage.message.setPosition(5, 280);
-    chatMessage.name.setPosition(5, 260);
+    int mess_xpos = 5, mess_ypos = 280;
+    int name_xpos = 5, name_ypos = mess_ypos - 20;
+    if (chatMessage.belongsToSelf)
+    {
+        name_xpos = box.getSize().x - 5 - chatMessage.name.getLocalBounds().width;
+        mess_xpos = box.getSize().x - 5 - chatMessage.message.getLocalBounds().width;
+    }
+
+    chatMessage.message.setPosition(mess_xpos, mess_ypos);
+    chatMessage.name.setPosition(name_xpos, name_ypos);
 
     for (unsigned int i = 0; i < messages.size(); ++i)
     {

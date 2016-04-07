@@ -13,10 +13,10 @@ Client::Client()
     , currentlyTyping(false)
 {
     font.loadFromFile("res/arial.ttf");
-    
+
     window.setKeyRepeatEnabled(true);
     window.setVerticalSyncEnabled(false);
-    
+
     chatBox.text.setFont(font);
 }
 
@@ -38,6 +38,7 @@ void Client::run()
 
     cout << "Connected succesfully!\n";
 
+    recorder.start();
 
     startClient();
 }
@@ -122,7 +123,7 @@ void Client::processEvents()
 			{
 			    packet << arg.c_str();
 			}
-			
+
 			client.send(packet);
 		    }
 
@@ -189,7 +190,7 @@ void Client::processNetworkEvents()
 		char newName[] = "YA FUCKED UP!!!!";
 		packet >> newName;
 		std::cout << "PERSON NAME: " << newName << std::endl;
-		
+
 		newPerson.name = newName;
 
                 cout << newPerson.name << " ";
@@ -213,6 +214,11 @@ void Client::processNetworkEvents()
 
 	    newChatMessage.name.setString(personMap.at(tempId).name + ":");
             newChatMessage.name.setFont(font);
+
+            if (personId == tempId)
+            {
+                newChatMessage.belongsToSelf = true;
+            }
 
             mainPane.addNewMessage(newChatMessage);
         }
@@ -244,6 +250,10 @@ void Client::startClient()
 {
     while (window.isOpen())
     {
+        voice.openFromSamples(dataPtr, recorder.getSampleRate());
+        voice.loadFromSamples(recorder.get, samples.size(), 2, 44100);
+
+
         processEvents();
 
         processNetworkEvents();
